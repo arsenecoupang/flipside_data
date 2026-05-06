@@ -98,11 +98,6 @@ def get_artist_recommendations(artist_name: str):
         HTTPException 404: 추천 데이터가 없는 경우.
     """
     results = get_recommendations(artist_name)
-    if not results:
-        raise HTTPException(
-            status_code=404,
-            detail=f"아티스트 '{artist_name}'에 대한 추천 LP가 없습니다.",
-        )
     return RecommendListResponse(data=results, total=len(results))
 
 
