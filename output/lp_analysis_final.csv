@@ -1,0 +1,3 @@
+﻿release_id,title,artist,year,genre,have,want,want_have_ratio,is_limited_edition,spotify_popularity,lowest_price,predicted_price,price_gap,price_tier
+249504,Never Gonna Give You Up,Rick Astley,1987,,0,0,0.0,0,0.0,0.57,0.56999993,-6.675720209958769e-08,low
+3185713,Bolle Nell'Aria,Ennio Pellegrini,1979,,0,0,0.0,0,0.0,5.0,0.56999993,-4.430000066757202,high

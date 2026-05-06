@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+.env
+.env.local
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+
+# Output (EDA 이미지는 제외, CSV는 포함)
+output/*.png
+
+# Vercel
+.vercel/
+
+# Claude Code
+.claude/
+.claude
+.cache/
+.cache
+
+# IDE
+.vscode/
+.idea/
+*.DS_Store
+
+# Logs
+*.log
