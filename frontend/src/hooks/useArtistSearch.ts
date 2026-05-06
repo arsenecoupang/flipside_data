@@ -7,9 +7,9 @@ import {
   searchArtist,
 } from "@/api/lpApi";
 
-const STALE = 5 * 60 * 1000;
+const STALE = 5 * 60 * 1000; // 5분
 
-/** /api/artist/search?q= — 부분 일치 검색 */
+/** /api/artist/search?q= — 부분 일치 (2자 이상) */
 export function useArtistSearch(q: string) {
   return useQuery({
     queryKey: ["artist", "search", q],
@@ -19,7 +19,7 @@ export function useArtistSearch(q: string) {
   });
 }
 
-/** /api/artist/{name}/lps */
+/** /api/artist/{name}/lps — LP 목록 */
 export function useArtistLPs(artistName: string) {
   return useQuery({
     queryKey: ["artist", "lps", artistName],
@@ -29,7 +29,7 @@ export function useArtistLPs(artistName: string) {
   });
 }
 
-/** /api/artist/{name}/recommendations */
+/** /api/artist/{name}/recommendations — 추천 LP 목록 */
 export function useArtistRecommendations(artistName: string) {
   return useQuery({
     queryKey: ["artist", "recommendations", artistName],
@@ -39,7 +39,7 @@ export function useArtistRecommendations(artistName: string) {
   });
 }
 
-/** /api/artist/{name}/stats */
+/** /api/artist/{name}/stats — 아티스트 통계 */
 export function useArtistStats(artistName: string) {
   return useQuery({
     queryKey: ["artist", "stats", artistName],

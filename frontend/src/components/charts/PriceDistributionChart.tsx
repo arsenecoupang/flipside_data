@@ -1,48 +1,136 @@
 // src/components/charts/PriceDistributionChart.tsx
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Cell,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from "recharts";
 import { CT } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { LPRecord } from "@/types";
 
-interface PriceDistributionChartProps { data: LPRecord[] }
+interface BinDef {
+  label: string;
+  min: number;
+  max: number;
+  color: string;
+}
 
-const TIER_COLORS: Record<string, string> = {
-  low: "#525252", mid: CT.primary, high: "#8b5cf6",
-};
+const BINS: BinDef[] = [
+  { label: "$0–50",    min: 0,   max: 50,       color: "#10b981" },
+  { label: "$50–100",  min: 50,  max: 100,      color: "#6366f1" },
+  { label: "$100–200", min: 100, max: 200,      color: "#f59e0b" },
+  { label: "$200+",    min: 200, max: Infinity, color: "#f59e0b" },
+];
 
-export function PriceDistributionChart({ data }: PriceDistributionChartProps) {
-  const tierData = (["low", "mid", "high"] as const).map((tier) => {
-    const items = data.filter((d) => d.price_tier === tier);
-    const prices = items.map((d) => d.lowest_price).filter((p): p is number => p != null);
+interface BinData extends BinDef {
+  current:   number;
+  predicted: number;
+}
+
+function buildBins(lps: LPRecord[]): BinData[] {
+  return BINS.map((bin) => {
+    const inBin = (v: number | null) =>
+      v != null && v >= bin.min && v < bin.max;
     return {
-      tier,
-      count: items.length,
-      avg_price: prices.length > 0
-        ? parseFloat((prices.reduce((s, p) => s + p, 0) / prices.length).toFixed(2))
-        : 0,
+      ...bin,
+      current:   lps.filter((lp) => inBin(lp.lowest_price)).length,
+      predicted: lps.filter((lp) => inBin(lp.predicted_price)).length,
     };
   });
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: { name: string; value: number; dataKey: string }[];
+  label?: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={CT.tooltip.contentStyle} className="px-3 py-2 space-y-1">
+      <p className="font-semibold" style={CT.tooltip.labelStyle}>{label}</p>
+      {payload.map((p) => (
+        <p key={p.dataKey} style={CT.tooltip.itemStyle}>
+          {p.name}{" "}
+          <span style={{ color: "var(--text-1)" }}>{p.value}개</span>
+        </p>
+      ))}
+    </div>
+  );
+};
+
+interface PriceDistributionChartProps {
+  data: LPRecord[];
+  loading?: boolean;
+}
+
+export function PriceDistributionChart({ data, loading }: PriceDistributionChartProps) {
+  if (loading) {
+    return <Skeleton className="w-full h-56" style={{ background: "var(--bg-sub)" }} />;
+  }
+
+  const bins = buildBins(data);
+  const hasData = bins.some((b) => b.current > 0 || b.predicted > 0);
+
+  if (!hasData) {
+    return (
+      <div
+        className="flex items-center justify-center h-56 text-sm"
+        style={{ color: "var(--text-muted)" }}
+      >
+        가격 데이터 없음
+      </div>
+    );
+  }
 
   return (
-    <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={tierData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke={CT.grid} />
-        <XAxis dataKey="tier" tick={{ fill: CT.tick, fontSize: 12 }} axisLine={{ stroke: CT.axis }} tickLine={false} />
-        <YAxis tick={{ fill: CT.tick, fontSize: 11 }} axisLine={{ stroke: CT.axis }} tickLine={false} />
-        <Tooltip
-          contentStyle={CT.tooltip.contentStyle}
-          labelStyle={CT.tooltip.labelStyle}
-          itemStyle={CT.tooltip.itemStyle}
-          formatter={(v: unknown, name: unknown) => [
-            name === "count" ? `${Number(v)}개` : `$${Number(v).toFixed(2)}`,
-            name === "count" ? "LP 수" : "평균 가격",
-          ]}
+    <ResponsiveContainer width="100%" height={224}>
+      <BarChart
+        data={bins}
+        margin={{ top: 4, right: 12, left: 0, bottom: 4 }}
+        barCategoryGap="25%"
+        barGap={2}
+      >
+        <CartesianGrid strokeDasharray="3 3" stroke={CT.grid} vertical={false} />
+        <XAxis
+          dataKey="label"
+          tick={{ fill: CT.tick, fontSize: 11 }}
+          axisLine={{ stroke: CT.axis }}
+          tickLine={false}
         />
-        <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-          {tierData.map((e) => (
-            <Cell key={e.tier} fill={TIER_COLORS[e.tier]} />
+        <YAxis
+          allowDecimals={false}
+          tick={{ fill: CT.tick, fontSize: 11 }}
+          axisLine={{ stroke: CT.axis }}
+          tickLine={false}
+          width={28}
+        />
+        <Tooltip content={<CustomTooltip />} cursor={{ fill: "#2d2d2d" }} />
+        <Legend
+          wrapperStyle={{ fontSize: 11, color: CT.tick, paddingTop: 8 }}
+          formatter={(v) => (
+            <span style={{ color: CT.tick }}>{v}</span>
+          )}
+        />
+
+        {/* 현재가 바 */}
+        <Bar dataKey="current" name="현재가" radius={[3, 3, 0, 0]}>
+          {bins.map((entry) => (
+            <Cell key={entry.label} fill={entry.color} />
+          ))}
+        </Bar>
+
+        {/* 예측가 바 (50% 투명도) */}
+        <Bar dataKey="predicted" name="예측가" radius={[3, 3, 0, 0]}>
+          {bins.map((entry) => (
+            <Cell key={entry.label} fill={entry.color} fillOpacity={0.4} />
           ))}
         </Bar>
       </BarChart>

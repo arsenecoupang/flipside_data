@@ -9,6 +9,7 @@ import {
   Search,
   TrendingUp,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { StatCard } from "@/components/cards/StatCard";
@@ -211,12 +212,12 @@ function UndervaluedTable({
 
 // ── 메인 컴포넌트 ──────────────────────────────────────────────────────────────
 
-interface DashboardPageProps {
-  onArtistClick: (artist: string) => void;
-}
-
-export function DashboardPage({ onArtistClick }: DashboardPageProps) {
+export function DashboardPage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const onArtistClick = (artist: string) =>
+    navigate(`/artist/${encodeURIComponent(artist)}`);
 
   const statsQuery = useLPStats();
   const allQuery = useLPAll(500);

@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* ── 다크 테마 CSS 변수 ─────────────────────────────────────────────────────── */
 @layer base {
   :root {
     --bg-root:    #0f0f0f;
@@ -15,21 +16,38 @@
     --text-muted: #525252;
   }
 
-  html, body, #root {
+  html,
+  body,
+  #root {
     background-color: var(--bg-root);
     color: var(--text-1);
     min-height: 100vh;
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   * {
     box-sizing: border-box;
     border-color: var(--border);
   }
-
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg-root); }
-  ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--text-2); }
 }
+
+/* ── 스크롤바 ───────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--text-muted); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-2); }
+
+/* ── Recharts 폰트 오버라이드 ──────────────────────────────────────────────── */
+.recharts-text,
+.recharts-cartesian-axis-tick-value,
+.recharts-label,
+.recharts-legend-item-text {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif !important;
+  font-size: 11px;
+}
+
+/* ── 가로 스크롤 영역 숨김 ─────────────────────────────────────────────────── */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
